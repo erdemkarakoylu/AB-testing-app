@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from scipy.stats import beta
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as pp
 import arviz as az
 
 st.set_page_config(page_title="Bayesian A/B Testing", layout="wide")
@@ -80,11 +80,21 @@ if update or data_mode in ["Sample data", "Manual entry"]:
     tab1, tab2, tab3 = st.tabs(["📈 Posterior Plots", "📋 Summary Table", "✅ Decision Metric"])
 
     with tab1:
-        for var in ['A', 'B', 'delta']:
-            st.markdown(f"**Posterior of {var}**")
-            fig, ax = plt.subplots()
-            az.plot_posterior(idata, var_names=[var], hdi_prob=hdi_level, rope=rope if var == 'delta' else None, ax=ax)
-            st.pyplot(fig)
+        fig, axs = pp.subplots(2, 2, figsize=(8, 6))
+        #fig.subplots_adjust(hspace=0.4)
+
+        az.plot_posterior(idata, var_names=["A"], hdi_prob=hdi_level, ax=axs[0, 0])
+        axs[0, 0].set_title("Posterior of p(A)")
+
+        az.plot_posterior(idata, var_names=["B"], hdi_prob=hdi_level, ax=axs[0, 1])
+        axs[0, 1].set_title("Posterior of p(B)")
+
+        az.plot_posterior(idata, var_names=["delta"], hdi_prob=hdi_level, rope=rope if use_rope else None, ax=axs[1, 0])
+        axs[1, 0].set_title("Posterior of p(B − A)")
+
+        fig.delaxes(axs[1, 1])
+        fig.tight_layout()
+        st.pyplot(fig)
 
     with tab2:
         st.subheader("ArviZ Posterior Summary")
